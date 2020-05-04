@@ -18,7 +18,7 @@ class Game:
         self.screen = pygame.display.set_mode(Game.WINDOW_SIZE)
         self.canvas = pygame.Surface(Game.CANVAS_SIZE)
         self.background = self.make_background()
-        self.camera = Camera(self.canvas.get_size())
+        self.camera = Camera(self.canvas.get_size(), lag=20)
         pygame.display.set_caption("Platformer")
         self.spritegroups = {}
 
