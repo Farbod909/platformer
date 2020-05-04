@@ -74,8 +74,8 @@ class Player(pygame.sprite.Sprite):
         if self.moving_right:
             self.velocity["x"] += Player.MOVEMENT_SPEED
         self.velocity["y"] += physics.GRAVITY_ACCELERATION
-        if self.velocity["y"] >= 3:
-            self.velocity["y"] = 3
+        if self.velocity["y"] >= physics.TERMINAL_VELOCITY:
+            self.velocity["y"] = physics.TERMINAL_VELOCITY
 
     def move(self, tilesprites):
         collision_types = {"top": False, "bottom": False, "right": False, "left": False}
