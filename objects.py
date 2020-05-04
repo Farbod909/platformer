@@ -30,7 +30,9 @@ class Tile(pygame.sprite.Sprite):
 
 class Player(pygame.sprite.Sprite):
     MOVEMENT_SPEED = 2
-    JUMP_SPEED = 6
+    JUMP_SPEED = 5
+    CONSECUTIVE_JUMP_SPEED = 4
+    JUMPS = 2
 
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
@@ -48,6 +50,7 @@ class Player(pygame.sprite.Sprite):
         self.moving_left = False
         self.moving_right = False
         self.air_timer = 0
+        self.jumps = Player.JUMPS
 
     @property
     def current_action(self):
@@ -123,6 +126,7 @@ class Player(pygame.sprite.Sprite):
 
     def hit_ground(self):
         self.air_timer = 0
+        self.jumps = Player.JUMPS
         self.velocity["y"] = 0
 
     def hit_ceiling(self):
@@ -134,3 +138,7 @@ class Player(pygame.sprite.Sprite):
     def jump(self):
         if self.air_timer == 0:
             self.velocity["y"] = -Player.JUMP_SPEED
+        else:
+            if self.jumps > 1:
+                self.velocity["y"] = -Player.CONSECUTIVE_JUMP_SPEED
+                self.jumps -= 1
