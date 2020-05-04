@@ -1,16 +1,13 @@
+import os
+import pygame
+from resources import load_animation_image
+
+
 def create_sequence(list_of_tuples):
     sequence = []
     for tuple in list_of_tuples:
         for i in range(tuple[1]):
             sequence.append(tuple[0])
-    return sequence
-
-
-def list_from_OrderedDict(o):
-    sequence = []
-    for k, v in o.items():
-        for i in range(v):
-            sequence.append(k)
     return sequence
 
 
@@ -26,17 +23,16 @@ class Animation:
         for state in possible_states:
             object_state_path = os.path.join(object_path, state)
             self.animations[state] = {
-                os.path.splitext(item)[0]: load_animation_image(
-                    object, action, item, -1
-                )
+                os.path.splitext(item)[0]: load_animation_image(object, state, item, -1)
                 for item in os.listdir(object_state_path)
                 if os.path.isfile(os.path.join(object_state_path, item))
             }
-        self.animation_sequence = {
-            "idle": create_sequence([("idle_0", 7), ("idle_1", 7), ("idle_2", 40)]),
-            "run": create_sequence([("run_0", 7), ("run_1", 7)]),
-        }
         self.current_frame = 0
+
+    def set_sequence(self, sequence_dict):
+        self.animation_sequence = {}
+        for state, sequence, in sequence_dict.items():
+            self.animation_sequence[state] = create_sequence(sequence)
 
     @property
     def current_state(self):
@@ -55,6 +51,8 @@ class Animation:
 
     @property
     def current_image(self):
+        if self.animation_sequence is None:
+            raise AttributeError("Animation sequence is not set. Use .set_sequence().")
         image = self.animations[self.current_state][
             self.animation_sequence[self.current_state][self.current_frame]
         ]

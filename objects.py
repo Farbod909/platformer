@@ -2,7 +2,7 @@ import math
 import os
 import physics
 import pygame
-from animations import list_from_OrderedDict
+from animations import Animation
 from collections import OrderedDict
 from resources import load_image, load_animation_image
 from saved_images import saved_images
@@ -31,43 +31,23 @@ class Tile(pygame.sprite.Sprite):
 class Player(pygame.sprite.Sprite):
     MOVEMENT_SPEED = 2
     JUMP_SPEED = 6
-    ACTIONS = ["idle", "run"]
 
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
-        self.image = load_image("player.png", -1)
+        self.animation = Animation("player", ["idle", "run"])
+        self.animation.set_sequence(
+            {
+                "idle": [("idle_0", 7), ("idle_1", 7), ("idle_2", 40)],
+                "run": [("run_0", 7), ("run_1", 7)],
+            }
+        )
+        self.image = self.animation.current_image
         self.rect = self.image.get_rect()
         self.rect.x, self.rect.y = x, y
         self.velocity = {"x": 0, "y": 0}
         self.moving_left = False
         self.moving_right = False
         self.air_timer = 0
-        self._current_action = Player.ACTIONS[0]
-
-        self.flip = False
-        animations_path = os.path.join("assets", "animations", "player")
-        self.animations = {}
-        for action in Player.ACTIONS:
-            action_animations_path = os.path.join(animations_path, action)
-            self.animations[action] = {
-                os.path.splitext(item)[0]: load_animation_image(
-                    "player", action, item, -1
-                )
-                for item in os.listdir(action_animations_path)
-                if os.path.isfile(os.path.join(action_animations_path, item))
-            }
-        animation_sequence_setup = {
-            "idle": OrderedDict([("idle_0", 7), ("idle_1", 7), ("idle_2", 40)]),
-            "run": OrderedDict([("run_0", 7), ("run_1", 7)]),
-        }
-        self.animation_sequence = {
-            key: list_from_OrderedDict(value)
-            for key, value in animation_sequence_setup.items()
-        }
-        self.current_animation_frame = 0
-        self.image = self.animations[self.current_action][
-            self.animation_sequence[self.current_action][self.current_animation_frame]
-        ]
 
     @property
     def current_action(self):
@@ -130,27 +110,16 @@ class Player(pygame.sprite.Sprite):
             self.hit_ceiling()
 
         if self.velocity["x"] > 0:
-            self.current_action = "run"
-            self.flip = False
+            self.animation.current_state = "run"
+            self.animation.flip = False
         if self.velocity["x"] < 0:
-            self.current_action = "run"
-            self.flip = True
+            self.animation.current_state = "run"
+            self.animation.flip = True
         if self.velocity["x"] == 0:
-            self.current_action = "idle"
+            self.animation.current_state = "idle"
 
-        self.image = self.animations[self.current_action][
-            self.animation_sequence[self.current_action][self.current_animation_frame]
-        ]
-
-        # PERFORMANCE: cache flipped image to prevent pygame.transform operation every frame
-        self.image = pygame.transform.flip(self.image, self.flip, False)
-
-        self.current_animation_frame += 1
-
-        if self.current_animation_frame >= len(
-            self.animation_sequence[self.current_action]
-        ):
-            self.current_animation_frame = 0
+        self.image = self.animation.current_image
+        self.animation.next_frame()
 
     def hit_ground(self):
         self.air_timer = 0
