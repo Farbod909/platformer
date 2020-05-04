@@ -29,6 +29,35 @@ def load_image(name, colorkey=None):
     return image
 
 
+def load_animation_image(object, action, name, colorkey=None):
+    """Loads an image that is an animation frame for an action of a specific game object.
+    
+    Args:
+        object (str): The type of object (e.g. "player")
+        action (str): The action the object is performing (e.g. "idle")
+        name (str): The name of the image (e.g. "idle_0.png")
+        colorkey (int or (int, int, int)): an RGB value that represents
+            the pixels that should be rendered as "transparent". If -1
+            is passed as this argument, the color of the top-right
+            pixel will be selected.
+    
+    Returns:
+        Surface: The image.
+    """
+    fullname = os.path.join("assets", "animations", object, action, name)
+    try:
+        image = pygame.image.load(fullname).convert()
+    except pygame.error as message:
+        print("Cannot load image:", name)
+        raise SystemExit(message)
+    image = image.convert()
+    if colorkey is not None:
+        if colorkey == -1:
+            colorkey = image.get_at((0, 0))
+        image.set_colorkey(colorkey, pygame.locals.RLEACCEL)
+    return image
+
+
 def load_sound(name):
     """Loads a sound from the assets folder.
     

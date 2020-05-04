@@ -1,4 +1,5 @@
 import pygame
+import sys
 from camera import Camera
 from colors import SKYBLUE
 from pygame.locals import *
