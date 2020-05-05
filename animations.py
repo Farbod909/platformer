@@ -11,6 +11,16 @@ def create_sequence(list_of_tuples):
     return sequence
 
 
+class AnimationMixin:
+    def initialize_animation(self, object, sequence_dict):
+        self.animation = Animation(object, list(sequence_dict.keys()))
+        self.animation.set_sequence(sequence_dict)
+
+    @property
+    def image(self):
+        return self.animation.current_image
+
+
 class Animation:
     def __init__(self, object, possible_states):
         self.object = object

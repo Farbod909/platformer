@@ -2,7 +2,7 @@ import math
 import os
 import physics
 import pygame
-from animations import Animation
+from animations import Animation, AnimationMixin
 from collections import OrderedDict
 from resources import load_image, load_animation_image
 from saved_images import saved_images
@@ -28,7 +28,7 @@ class Tile(pygame.sprite.Sprite):
         pass
 
 
-class Player(pygame.sprite.Sprite):
+class Player(pygame.sprite.Sprite, AnimationMixin):
     MOVEMENT_SPEED = 2
     JUMP_SPEED = 5
     CONSECUTIVE_JUMP_SPEED = 4
@@ -36,14 +36,13 @@ class Player(pygame.sprite.Sprite):
 
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
-        self.animation = Animation("player", ["idle", "run"])
-        self.animation.set_sequence(
+        self.initialize_animation(
+            "player",
             {
                 "idle": [("idle_0", 7), ("idle_1", 7), ("idle_2", 40)],
                 "run": [("run_0", 7), ("run_1", 7)],
-            }
+            },
         )
-        self.image = self.animation.current_image
         self.rect = self.image.get_rect()
         self.rect.x, self.rect.y = x, y
         self.velocity = {"x": 0, "y": 0}
@@ -51,21 +50,6 @@ class Player(pygame.sprite.Sprite):
         self.moving_right = False
         self.air_timer = 0
         self.jumps = Player.JUMPS
-
-    @property
-    def current_action(self):
-        return self._current_action
-
-    @current_action.setter
-    def current_action(self, value):
-        if self._current_action != value:
-            if value in Player.ACTIONS:
-                self._current_action = value
-                self.current_animation_frame = 0
-            else:
-                raise ValueError(
-                    "%s is not a valid action for %s" % (value, self.__class__.__name__)
-                )
 
     def update_velocity(self):
         self.velocity["x"] = 0
@@ -121,7 +105,6 @@ class Player(pygame.sprite.Sprite):
         if self.velocity["x"] == 0:
             self.animation.current_state = "idle"
 
-        self.image = self.animation.current_image
         self.animation.next_frame()
 
     def hit_ground(self):
